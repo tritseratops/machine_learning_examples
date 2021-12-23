@@ -15,7 +15,7 @@ from keras.models import Model
 from keras.layers import Dense, Embedding, Input, LSTM
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
-from keras.optimizers import Adam, SGD
+from tensorflow.keras.optimizers import Adam, SGD
 
 try:
   import keras.backend as K
@@ -81,7 +81,7 @@ print('Shape of data tensor:', input_sequences.shape)
 # load in pre-trained word vectors
 print('Loading word vectors...')
 word2vec = {}
-with open(os.path.join('../large_files/glove.6B/glove.6B.%sd.txt' % EMBEDDING_DIM)) as f:
+with open(os.path.join('../../DeepLearningAdvancedNLPandRNNs/large_files/glove.6B.%sd.txt' % EMBEDDING_DIM), encoding='UTF-8') as f:
   # is just a space-separated text file in the format:
   # word vec[0] vec[1] vec[2] ...
   for line in f:

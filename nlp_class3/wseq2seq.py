@@ -11,7 +11,7 @@ from keras.models import Model
 from keras.layers import Input, LSTM, GRU, Dense, Embedding
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
-from keras.utils import to_categorical
+from tensorflow.keras.utils import to_categorical
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -41,7 +41,7 @@ target_texts_inputs = [] # sentence in target language offset by 1
 # load in the data
 # download the data at: http://www.manythings.org/anki/
 t = 0
-for line in open('../large_files/translation/spa.txt'):
+for line in open('../../DeepLearningAdvancedNLPandRNNs/large_files/ukr.txt', encoding='UTF-8' ):
   # only keep a limited number of samples
   t += 1
   if t > NUM_SAMPLES:
@@ -81,6 +81,10 @@ max_len_input = max(len(s) for s in input_sequences)
 # don't filter out special characters
 # otherwise <sos> and <eos> won't appear
 tokenizer_outputs = Tokenizer(num_words=MAX_NUM_WORDS, filters='')
+print("len(target_texts)", len(target_texts))
+print("len(target_texts_inputs)", len(target_texts_inputs))
+print("target_texts[0:10]", target_texts[0:10])
+print("target_texts_inputs[0:10]", target_texts_inputs[0:10])
 tokenizer_outputs.fit_on_texts(target_texts + target_texts_inputs) # inefficient, oh well
 target_sequences = tokenizer_outputs.texts_to_sequences(target_texts)
 target_sequences_inputs = tokenizer_outputs.texts_to_sequences(target_texts_inputs)
@@ -102,7 +106,9 @@ encoder_inputs = pad_sequences(input_sequences, maxlen=max_len_input)
 print("encoder_inputs.shape:", encoder_inputs.shape)
 print("encoder_inputs[0]:", encoder_inputs[0])
 
-decoder_inputs = pad_sequences(target_sequences_inputs, maxlen=max_len_target, padding='post')
+print("len(target_sequences_inputs):", len(target_sequences_inputs))
+print("target_sequences_inputs[0:10]:", target_sequences_inputs[0:10])
+decoder_inputs = pad_sequences(target_sequences_inputs, maxlen=max_len_target)
 print("decoder_inputs[0]:", decoder_inputs[0])
 print("decoder_inputs.shape:", decoder_inputs.shape)
 
@@ -117,7 +123,7 @@ decoder_targets = pad_sequences(target_sequences, maxlen=max_len_target, padding
 # store all the pre-trained word vectors
 print('Loading word vectors...')
 word2vec = {}
-with open(os.path.join('../large_files/glove.6B/glove.6B.%sd.txt' % EMBEDDING_DIM)) as f:
+with open(os.path.join('../../DeepLearningAdvancedNLPandRNNs/large_files/glove.6B.%sd.txt' % EMBEDDING_DIM), encoding='UTF-8') as f:
   # is just a space-separated text file in the format:
   # word vec[0] vec[1] vec[2] ...
   for line in f:
@@ -251,12 +257,14 @@ model.compile(optimizer='adam', loss=custom_loss, metrics=[acc])
 #   metrics=['accuracy']
 # )
 
-
+print("encoder_inputs.shape", encoder_inputs.shape)
+print("decoder_inputs.shape", decoder_inputs.shape)
+print("decoder_targets_one_hot.shape", decoder_targets_one_hot.shape)
 
 r = model.fit(
   [encoder_inputs, decoder_inputs], decoder_targets_one_hot,
   batch_size=BATCH_SIZE,
-  epochs=EPOCHS,
+  epochs=40, #EPOCHS,
   validation_split=0.2,
 )
 
@@ -267,8 +275,8 @@ plt.legend()
 plt.show()
 
 # accuracies
-plt.plot(r.history['accuracy'], label='acc')
-plt.plot(r.history['val_accuracy'], label='val_acc')
+plt.plot(r.history['acc'], label='acc')
+plt.plot(r.history['val_acc'], label='val_acc')
 plt.legend()
 plt.show()
 
@@ -277,9 +285,8 @@ model.save('s2s.h5')
 
 
 
-
 ##### Make predictions #####
-# As with the poetry example, we need to create another model
+# # As with the poetry example, we need to create another model
 # that can take in the RNN state and previous word as input
 # and accept a T=1 sequence.
 
