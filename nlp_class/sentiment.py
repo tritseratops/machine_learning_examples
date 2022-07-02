@@ -15,6 +15,8 @@ from builtins import range
 
 
 import nltk
+# need to execute once
+# nltk.download('omw-1.4')
 import numpy as np
 from sklearn.utils import shuffle
 
